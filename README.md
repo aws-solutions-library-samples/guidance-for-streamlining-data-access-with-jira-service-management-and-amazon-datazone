@@ -227,7 +227,7 @@ Follow these steps to deploy the stack in your account:
 * Run the following command to deploy AWS CDK app, replacing `<AWS_PROFILE>` and `<AWS_REGION>`with the AWS CLI profile name mapping to your account:
 
 ```
-npm run cdk deploy -- --all —region ${AWS_REGION} —profile ${AWS_PROFILE}
+npm run cdk deploy -- --all --region ${AWS_REGION} --profile ${AWS_PROFILE}
 ```
 
 You will be able to see the progress of the deployment in your terminal and [AWS CloudFormation console](https://console.aws.amazon.com/cloudformation/home?) of your account.
@@ -446,7 +446,7 @@ def create_workflow(workflow_type_string):
 ### Uninstall using the AWS CDK CLI
 
 Execute the following command to destroy CDK app, replacing `<AWS_REGION>` and `<AWS_PROFILE>` with the AWS CLI profile name mapping to your governed account:
-`npm run cdk destroy -- --all —region ${AWS_REGION} —profile ${AWS_PROFILE}`
+`npm run cdk destroy -- --all —region ${AWS_REGION} --profile ${AWS_PROFILE}`
 
 Even though the AWS CDK CLI will give you live updates on the destroy process, you can always follow along in the CloudFormation console.
 
