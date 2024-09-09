@@ -1,0 +1,183 @@
+{
+    "Comment": "Pass information Dz event trigger for subscription creation",
+    "StartAt": "PreparePayloadforTriggerJira",
+    "States": {
+      "PreparePayloadforTriggerJira": {
+        "Type": "Pass",
+        "Next": "SQSTriggerJira",
+        "Parameters": {
+          "MessageGroupId": "JIRA",
+          "Command": "CREATE_ISSUE",
+          "Payload.$": "$"
+        }
+      },
+      "SQSTriggerJira": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::aws-sdk:sqs:sendMessage.waitForTaskToken",
+        "Parameters": {
+          "QueueUrl": "${JiraResiliencyQueueARN}",
+          "MessageGroupId": "JIRA",
+          "MessageBody": {
+            "MessageTitle": "Task started for Jira ticket creation",
+            "TaskToken.$": "$$.Task.Token",
+            "Command.$": "$.Command",
+            "Payload.$": "$.Payload"
+          }
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.Timeout",
+              "States.TaskFailed"
+            ],
+            "ResultPath": null,
+            "Next": "Failed"
+          }
+        ],
+        "ResultPath": "$.Payload",
+        "Next": "Wait X minutes",
+        "TimeoutSeconds": 86400
+      },
+      "Wait X minutes": {
+        "Type": "Wait",
+        "Seconds": "${jiraPollingFrequency}",
+        "Next": "PreparePayloadforPollingJira"
+      },
+      "PreparePayloadforPollingJira": {
+        "Type": "Pass",
+        "Next": "SQSGetJira",
+        "Parameters": {
+          "Command": "GET_ISSUE_STATUS",
+          "Payload.$": "$.Payload",
+          "StatusCode.$": "$.Payload.statusCode"
+        }
+      },
+      "SQSGetJira": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::aws-sdk:sqs:sendMessage.waitForTaskToken",
+        "Parameters": {
+          "QueueUrl": "${JiraResiliencyQueueARN}",
+          "MessageGroupId": "JIRA",
+          "MessageBody": {
+            "MessageTitle": "Task started for Jira ticket creation",
+            "TaskToken.$": "$$.Task.Token",
+            "Command.$": "$.Command",
+            "Payload.$": "$.Payload"
+          }
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.Timeout",
+              "States.TaskFailed"
+            ],
+            "ResultPath": null,
+            "Next": "Failed"
+          }
+        ],
+        "ResultPath": "$.Payload",
+        "Next": "Choice",
+        "TimeoutSeconds": 86400
+      },
+      "Choice": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "And": [
+              {
+                "Variable": "$.StatusCode",
+                "NumericEquals": 200
+              },
+              {
+                "Or": [
+                  {
+                    "Variable": "$.Payload.approval_status",
+                    "StringEquals": "To Do"
+                  },
+                  {
+                    "Variable": "$.Payload.approval_status",
+                    "StringEquals": "In Progress"
+                  }
+                ]
+              }
+            ],
+            "Next": "Wait X minutes"
+          },
+          {
+            "And": [
+              {
+                "Variable": "$.StatusCode",
+                "NumericEquals": 200
+              },
+              {
+                "Variable": "$.Payload.approval_status",
+                "StringEquals": "Skipped"
+              }
+            ],
+            "Next": "ApprovalStatusSkipped"
+          }
+        ],
+        "Default": "PreparePayloadforTriggerDataZoneSubChange"
+      },
+      "ApprovalStatusSkipped": {
+        "Type": "Succeed"
+      },
+      "Failed": {
+        "Type": "Fail"
+      },
+      "PreparePayloadforTriggerDataZoneSubChange": {
+        "Type": "Pass",
+        "Next": "updateDataZoneSubscription",
+        "Parameters": {
+          "Command": "UPDATE_DATAZONE_SUBSCRIPTION",
+          "Payload.$": "$.Payload"
+        }
+      },
+      "updateDataZoneSubscription": {
+        "End": true,
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 1,
+            "BackoffRate": 2
+          }
+        ],
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "ResultPath": null,
+        "Parameters": {
+          "FunctionName": "${ChangeSubscriptionStatusLambdaARN}",
+          "Payload.$": "$"
+        }
+      }
+    }
+  }

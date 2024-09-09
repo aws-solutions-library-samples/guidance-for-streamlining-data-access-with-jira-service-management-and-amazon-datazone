@@ -1,0 +1,38 @@
+{
+  "name": "dz-external-workflow-integration",
+  "version": "0.1.0",
+  "bin": {
+    "app": "bin/app.ts"
+  },
+  "scripts": {
+    "build": "tsc && tsc --build --clean && npm run lint",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "npx aws-cdk@2.155.0",
+    "lint": "npx eslint . --ext .ts --max-warnings 0",
+    "lint:fix": "npx eslint . --ext .ts --fix"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@types/jest": "29.5.12",
+    "@types/node": "20.12.10",
+    "jest": "29.7.0",
+    "ts-jest": "29.1.2",
+    "ts-node": "10.9.2",
+    "typescript": "5.4.5",
+    "@typescript-eslint/eslint-plugin": "7.8.0",
+    "@typescript-eslint/parser": "7.8.0",
+    "eslint": "8.57.0",
+    "eslint-plugin-import": "2.29.1",
+    "csv": "6.3.8",
+    "glob": "10.3.10"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.155.0",
+    "cdk-nag": "2.28.111",
+    "constructs": "10.3.0",
+    "source-map-support": "^0.5.21"
+  }
+}
