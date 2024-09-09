@@ -1,0 +1,143 @@
+{
+  "Comment": "Pass information Dz event trigger for subscription creation",
+  "StartAt": "PreparePayloadforTriggerJira",
+  "States": {
+    "PreparePayloadforTriggerJira": {
+      "Type": "Pass",
+      "Next": "CreateIssue",
+      "Parameters": {
+        "Command": "CREATE_ISSUE",
+        "Payload.$": "$"
+      }
+    },
+    "CreateIssue": {
+      "Next": "Wait X minutes",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 1,
+          "BackoffRate": 2
+        }
+      ],
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${CreateGetIssueLambdaARN}",
+        "Payload.$": "$"
+      }
+    },
+    "Wait X minutes": {
+      "Type": "Wait",
+      "Seconds": "${jiraPollingFrequency}",
+      "Next": "PreparePayloadforPollingJira"
+    },
+    "PreparePayloadforPollingJira": {
+      "Type": "Pass",
+      "Next": "GetIssue",
+      "Parameters": {
+        "Command": "GET_ISSUE_STATUS",
+        "Payload.$": "$.Payload",
+        "StatusCode.$": "$.StatusCode"
+      }
+    },
+    "GetIssue": {
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${CreateGetIssueLambdaARN}",
+        "Payload.$": "$"
+      },
+      "Next": "Choice"
+    },
+    "Choice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "And": [
+            {
+              "Variable": "$.StatusCode",
+              "NumericEquals": 200
+            },
+            {
+              "Or": [
+                {
+                  "Variable": "$.Payload.approval_status",
+                  "StringEquals": "To Do"
+                },
+                {
+                  "Variable": "$.Payload.approval_status",
+                  "StringEquals": "In Progress"
+                }
+              ]
+            }
+          ],
+          "Next": "Wait X minutes"
+        },
+        {
+          "And": [
+            {
+              "Variable": "$.StatusCode",
+              "NumericEquals": 200
+            },
+            {
+              "Variable": "$.Payload.approval_status",
+              "StringEquals": "Skipped"
+            }
+          ],
+          "Next": "ApprovalStatusSkipped"
+        }
+      ],
+      "Default": "PreparePayloadforTriggerDataZoneSubChange"
+    },
+    "ApprovalStatusSkipped": {
+      "Type": "Succeed"
+    },
+    "PreparePayloadforTriggerDataZoneSubChange": {
+      "Type": "Pass",
+      "Next": "updateDataZoneSubscription",
+      "Parameters": {
+        "Command": "UPDATE_DATAZONE_SUBSCRIPTION",
+        "Payload.$": "$.Payload"
+      }
+    },
+    "updateDataZoneSubscription": {
+      "End": true,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 1,
+          "BackoffRate": 2
+        }
+      ],
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "ResultPath": null,
+      "Parameters": {
+        "FunctionName": "${ChangeSubscriptionStatusLambdaARN}",
+        "Payload.$": "$"
+      }
+    }
+  }
+}
