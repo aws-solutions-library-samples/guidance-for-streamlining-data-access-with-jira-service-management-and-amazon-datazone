@@ -20,10 +20,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
+import { AwsSolutionsChecks } from 'cdk-nag';
 import { dataZoneConfig } from '../config/DataZoneConfig';
 import { DataZoneSubscriptionAutomationRoleStack } from '../lib/DataZoneSubscriptionAutomationRoleStack';
 import { DataZoneSubscriptionStack } from '../lib/DataZoneSubscriptionStack';
-import { AwsSolutionsChecks } from 'cdk-nag';
 
 const app = new cdk.App();
 const configs = dataZoneConfig();
@@ -41,4 +41,4 @@ new DataZoneSubscriptionStack(app, `${applicationName}DataZoneSubscriptionStack`
   dzEncryptionKeyArn: configs.DZ_ENCRYPTION_KEY_ARN,
   domainId: configs.DZ_DOMAIN_ID,
 });
-cdk.Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
+cdk.Aspects.of(app).add(new AwsSolutionsChecks({ verbose: true }));

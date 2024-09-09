@@ -320,13 +320,13 @@ export class DataZoneSubscriptionStack extends cdk.Stack {
         removalPolicy: RemovalPolicy.DESTROY,
       });
 
-    // Suppress the AwsSolutions-KMS5 warning for the sqsKmsKey resource
-    NagSuppressions.addResourceSuppressions(sqsKmsKey, [
-      {
-        id: 'AwsSolutions-KMS5',
-        reason: 'Do not activate automatic KMS key rotation unless a strict regulatory or compliance driver requires it. Every key costs $1/month. If keys automatically rotate annually, then the keys cost $1/month in year 1, $2/month in year 2, and $N/month in year N. This adds no meaningful protection because KMS encrypts data using envelope encryption.',
-      },
-    ], true);
+      // Suppress the AwsSolutions-KMS5 warning for the sqsKmsKey resource
+      NagSuppressions.addResourceSuppressions(sqsKmsKey, [
+        {
+          id: 'AwsSolutions-KMS5',
+          reason: 'Do not activate automatic KMS key rotation unless a strict regulatory or compliance driver requires it. Every key costs $1/month. If keys automatically rotate annually, then the keys cost $1/month in year 1, $2/month in year 2, and $N/month in year N. This adds no meaningful protection because KMS encrypts data using envelope encryption.',
+        },
+      ], true);
 
       const DLQueue = new aws_sqs.Queue(this, 'DLQueue', {
         fifo: true,

@@ -8,12 +8,9 @@
     "build": "tsc && tsc --build --clean && npm run lint",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "npx aws-cdk@2.140.0",
-    "license": "npx ts-node ./scripts/check-licenses.ts",
+    "cdk": "npx aws-cdk@2.155.0",
     "lint": "npx eslint . --ext .ts --max-warnings 0",
-    "lint:fix": "npx eslint . --ext .ts --fix",
-    "audit:license": "npm run license",
-    "audit:license:fix": "npm run license -- --fix"
+    "lint:fix": "npx eslint . --ext .ts --fix"
   },
   "engines": {
     "node": ">=18"
@@ -33,7 +30,7 @@
     "glob": "10.3.10"
   },
   "dependencies": {
-    "aws-cdk-lib": "2.140.0",
+    "aws-cdk-lib": "2.155.0",
     "cdk-nag": "2.28.111",
     "constructs": "10.3.0",
     "source-map-support": "^0.5.21"
