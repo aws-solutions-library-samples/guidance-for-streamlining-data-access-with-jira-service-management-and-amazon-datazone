@@ -332,11 +332,10 @@ UNION ALL SELECT 46781887, 24, 30.4, 54, 62, 13, 18, 29, 24, 52, 223, 4561
 - After submitting the subscription request, the workflow will be triggered automatically.
 5. Then Open your Jira project, You will be able to see a new Jira ticket created on the Jira board related to your subscription request. You should see a task similar to the one depicted in the following figure
 ![Fig.2](docs/JiraTicket.png)
-5. Wait for Status Update:
-- Wait for at least 60 seconds, as this is the default waiting time of the step function before checking the status of the ticket.
-7. Move it to Accepted (or Rejected)
+6. Move it to Accepted (or Rejected)
 ![Alt Text](docs/sdap_jira_images/jira-issue-gif.gif)
-
+7. Wait for Status Update:
+- Wait for at least 60 seconds, as this is the default waiting time of the step function before checking the status of the ticket.
 You will be able too see the issue the subscription request accepted (or rejected) on your Amazon DataZone portal under Subscribed Data section.
 
 ![Figure 19: Step screenshot](docs/sdap_jira_images/running-screenshot-9.png)
