@@ -52,6 +52,7 @@ export class DataZoneSubscriptionStack extends cdk.Stack {
   public readonly changeSubscriptionStatusFunction: aws_lambda.Function;
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
+    this.templateOptions.description = "Guidance for streamlining data Aacess for JIRA service management and Amazon DataZone (SO9545)"
     const subscriptionConfigForStage = subscriptionConfig();
     /*****
       A secret storing external workflow access details
